@@ -1,47 +1,57 @@
 # web3geeks-tasks
-# Adult Income Prediction - Day 1
+# Adult Income Prediction - Day 2
+Day 2 – Supervised Learning Models
+Overview
 
-# Project Goal
+In Day 2, I worked with the Adult Census Income dataset and built two supervised machine learning models. The main focus was on preprocessing mixed data, using pipelines, training models, and evaluating their performance on a hold-out test set.
 
-The goal of this project is to predict if a person earns more than $50K per year.
+Task 1: Preprocessing
 
-* 0 = <=50K
-* 1 = >50K
+The dataset contains both numeric and categorical features. For numeric features, I used median imputation followed by StandardScaler. For categorical features, I used most-frequent imputation followed by OneHotEncoder with handle_unknown='ignore'.
 
-#Task 1: Problem Definition
+I used a ColumnTransformer and pipelines so that the same preprocessing steps were applied correctly and data leakage was avoided.
 
-We want to find people who are likely to earn more than $50K. We selected Precision as the main metric because we want to reduce wrong positive predictions.
+Task 2: Supervised Models
 
-#Task 2: Data Exploration
+Two models were trained:
 
-* Converted income into 0 and 1.
-* Checked missing values and data types.
-* Checked categorical columns and their values.
-* Created histograms and bar plots.
-* Created a simple summary table.
+Logistic Regression
+Decision Tree Classifier
 
-#Task 3: Train/Test Split
+Both models were trained only on the training data. The hold-out test data was kept separate for evaluation.
 
-The data was divided into training data and test data in an 80/20 ratio. The test data will be used only for final evaluation.
+Task 3: Model Evaluation
 
-## Task 4: Baselines
+Both models were evaluated using accuracy, precision, recall, F1 score, ROC AUC, PR AUC, ROC curves, Precision-Recall curves, and confusion matrices.
 
-We created two simple baselines:
+Results
+Metric	Logistic Regression	Decision Tree
+Accuracy	0.8524	0.8141
+Precision	0.7414	0.6098
+Recall	0.5885	0.6198
+F1 Score	0.6562	0.6148
+ROC AUC	0.9042	0.7475
+PR AUC	0.7632	0.4690
 
-* **Majority baseline:** Always predicts <=50K.
-* **Rule-based baseline:** Predicts >50K when education-num is 13 or more.
+Logistic Regression performed better on most metrics, while Decision Tree had slightly higher recall.
 
-We checked their accuracy, precision, recall, F1, ROC AUC, PR AUC, and confusion matrices.
+Task 4: Interpretability
 
-#Task 5: Error Analysis
+For Logistic Regression, I examined the coefficients to identify the top positive and negative features.
 
-We checked false positives and false negatives. We also found some data issues such as missing values, categorical data, skewed values, and extreme values.
+For the Decision Tree, I checked its depth, training score, test score, and important features. The training score was 0.9999 and the test score was 0.8141, which suggests possible overfitting.
 
-#Results
+The three most important features found were:
 
-* Majority baseline: **76.1% accuracy and 0% precision**
-* Rule-based baseline: **75.3% accuracy and 48.4% precision**
+marital-status_Married-civ-spouse
+fnlwgt
+education-num
+Task 5: Model Selection
 
-#Main Metric
+Based on the results, Logistic Regression was selected for further development. It achieved better overall performance and also provides easier interpretation through its coefficients.
 
-Precision will be our main metric because we want our >50K predictions to be more accurate.
+For Day 3, I plan to test different preprocessing choices, especially different methods for handling missing categorical values. The preprocessing pipeline will also be reused for future models.
+
+Conclusion
+
+Day 2 helped me understand how preprocessing pipelines can be combined with supervised machine learning models. Logistic Regression was the stronger overall model based on the evaluation results, so it will be the main candidate for further improvement on Day 3.
