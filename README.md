@@ -1,5 +1,4 @@
-# web3geeks-tasks
-# Adult Income Prediction - Day 2
+
 Day 2 – Supervised Learning Models
 Overview
 
