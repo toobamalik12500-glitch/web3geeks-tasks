@@ -14,7 +14,7 @@ jobs:
       - name: Install and Check
         run: |
           pip install fastapi uvicorn
-          python -m py_compile main.py
+          python -m py_compile app.py
       - name: Build Docker Image
         run: docker build -t voice-agent .
       - name: Test Health Endpoint
