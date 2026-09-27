@@ -1,56 +1,54 @@
+markdown# W4 - Real Estate Voice Agent | Web3Geeks Capstone Project
 
-Day 2 – Supervised Learning Models
-Overview
+### 1. Project Overview
+This is the final capstone project of the Web3Geeks Internship. The goal of this project is to build an intelligent AI Voice Agent for the Real Estate industry. In traditional real estate, customers have to manually search portals and call agents. This project automates that process with a conversational voice AI that can understand user needs and provide property information instantly.
 
-In Day 2, I worked with the Adult Census Income dataset and built two supervised machine learning models. The main focus was on preprocessing mixed data, using pipelines, training models, and evaluating their performance on a hold-out test set.
+This project is maintained as part of a Monorepo which contains all internship daily tasks (Day 2, Day 3... to Capstone).
 
-Task 1: Preprocessing
+### 2. Problem Statement
+- Manual property searching is time-consuming.
+- Real estate agents are not available 24/7.
+- No instant voice-based support for property inquiries.
+- Lack of automation in scheduling property visits.
 
-The dataset contains both numeric and categorical features. For numeric features, I used median imputation followed by StandardScaler. For categorical features, I used most-frequent imputation followed by OneHotEncoder with handle_unknown='ignore'.
+### 3. Proposed Solution
+An AI-powered Voice Agent that:
+- Listens to the user's voice query (e.g., "I need a 3BHK in Faisalabad under 2 crore").
+- Processes the intent using AI/NLP.
+- Searches from the property database.
+- Responds back in natural voice and text.
+- Can schedule a site visit for the interested customer.
 
-I used a ColumnTransformer and pipelines so that the same preprocessing steps were applied correctly and data leakage was avoided.
+### 4. Key Features
+- **Conversational AI:** Natural language understanding for real estate queries.
+- **Smart Search:** Filter properties by Location, Price, Bedrooms, and Type.
+- **24/7 Availability:** Acts as a virtual agent that never sleeps.
+- **API Based Architecture:** Built with FastAPI for high performance.
+- **Health Monitoring:** A `/health` endpoint for uptime checking.
+- **Production Ready:** Fully dockerized and integrated with CI/CD pipeline.
 
-Task 2: Supervised Models
+### 5. System Architecture
+User Voice -> Speech-to-Text -> Intent Understanding (LLM) -> Property Search Logic -> Text-to-Speech -> Voice Response
 
-Two models were trained:
+The backend is a FastAPI server that exposes endpoints. The entire application is containerized using Docker and automatically tested and built using GitHub Actions.
 
-Logistic Regression
-Decision Tree Classifier
+### 6. Tech Stack
+- **Backend Framework:** FastAPI (Python)
+- **AI & Voice:** OpenAI API / Speech Recognition
+- **DevOps:** Docker, GitHub Actions for CI/CD
+- **Language:** Python 3.10+
 
-Both models were trained only on the training data. The hold-out test data was kept separate for evaluation.
+### 7. CI/CD Pipeline Explanation
+To ensure code quality and deployment readiness, a CI/CD pipeline is configured at the root `.github/workflows/main.yml`:
 
-Task 3: Model Evaluation
+1.  **Checkout & Setup:** Workflow checks out the Monorepo and sets up Python.
+2.  **Install Dependencies:** Installs requirements from `W4_Real_estate_agent_project/requirements.txt` using `working-directory`.
+3.  **Build Docker Image:** Builds Docker image to verify that the Dockerfile is error-free.
+4.  **Test Endpoint:** Runs the container and tests the `/health` endpoint. If it returns 200, the pipeline passes (Green Tick).
 
-Both models were evaluated using accuracy, precision, recall, F1 score, ROC AUC, PR AUC, ROC curves, Precision-Recall curves, and confusion matrices.
-
-Results
-Metric	Logistic Regression	Decision Tree
-Accuracy	0.8524	0.8141
-Precision	0.7414	0.6098
-Recall	0.5885	0.6198
-F1 Score	0.6562	0.6148
-ROC AUC	0.9042	0.7475
-PR AUC	0.7632	0.4690
-
-Logistic Regression performed better on most metrics, while Decision Tree had slightly higher recall.
-
-Task 4: Interpretability
-
-For Logistic Regression, I examined the coefficients to identify the top positive and negative features.
-
-For the Decision Tree, I checked its depth, training score, test score, and important features. The training score was 0.9999 and the test score was 0.8141, which suggests possible overfitting.
-
-The three most important features found were:
-
-marital-status_Married-civ-spouse
-fnlwgt
-education-num
-Task 5: Model Selection
-
-Based on the results, Logistic Regression was selected for further development. It achieved better overall performance and also provides easier interpretation through its coefficients.
-
-For Day 3, I plan to test different preprocessing choices, especially different methods for handling missing categorical values. The preprocessing pipeline will also be reused for future models.
-
-Conclusion
-
-Day 2 helped me understand how preprocessing pipelines can be combined with supervised machine learning models. Logistic Regression was the stronger overall model based on the evaluation results, so it will be the main candidate for further improvement on Day 3.
+### 8. How to Run
+```bash
+cd W4_Real_estate_agent_project
+pip install -r requirements.txt
+uvicorn main:app --reload9. Future Improvements
+Integration with real-time MLS (Multiple Listing Service) API.WhatsApp Voice Bot Integration.Multilingual Support (Urdu + English).Admin Dashboard for Agents to manage leads.
