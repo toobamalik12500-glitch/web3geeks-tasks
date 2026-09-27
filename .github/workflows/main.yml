@@ -11,10 +11,14 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
+      - name: List Files
+        run: |
+          ls -R
+          find . -name "*.py"
       - name: Install and Check
         run: |
           pip install fastapi uvicorn
-          python -m py_compile app.py
+          python -m compileall .
       - name: Build Docker Image
         run: docker build -t voice-agent .
       - name: Test Health Endpoint
