@@ -1,79 +1,75 @@
-from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse
+from fastapi import FastAPI, Query
+from fastapi.responses import FileResponse, JSONResponse
 from pydantic import BaseModel
-import os, json
 import google.generativeai as genai
+import os
+import requests
 
-app = FastAPI(title="Real Estate Voice Agent")
-app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
+app = FastAPI()
 
-GEMINI_KEY = os.getenv("GEMINI_API_KEY")
-if GEMINI_KEY:
-    genai.configure(api_key=GEMINI_KEY)
+# --- Config ---
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+FISH_API_KEY = os.getenv("FISH_API_KEY")
+FISH_MODEL_ID = os.getenv("FISH_MODEL_ID") # Railway Variables me ye bhi add karna
 
-PROPERTIES = [
-  {"id":1, "city":"Lahore", "area":"DHA Phase 6", "beds":5, "price":"3.5 Crore", "type":"House"},
-  {"id":2, "city":"Karachi", "area":"Bahria Town", "beds":3, "price":"1.8 Crore", "type":"Apartment"},
-  {"id":3, "city":"Islamabad", "area":"Gulberg Greens", "beds":4, "price":"5 Crore", "type":"Villa"}
-]
+genai.configure(api_key=GEMINI_API_KEY)
+model = genai.GenerativeModel("gemini-1.5-flash")
 
-SYSTEM_PROMPT = "You are Pakistani Real Estate Salesman, speak UrduLish, warm and professional. Never hallucinate. Only use given properties. Guide towards booking."
+AUDIO_PATH = "/tmp/last_audio.mp3"
 
 class ChatRequest(BaseModel):
     message: str
     history: list = []
 
-@app.get("/")
-def home(): return {"message":"Real Estate Voice Agent is running - W5 Voice Ready"}
-
-@app.get("/health")
-def health(): return {"status":"healthy", "agent":"Real Estate Voice Agent"}
-
-@app.get("/status")
-def system_status(): return {"fastapi":"working","fish_audio":"working","langgraph":"working","rag":"working","vector_retrieval":"working","property_database":"working","google_calendar":"working","email_automation":"working","n8n":"working"}
-
-@app.get("/properties")
-def get_properties(): return PROPERTIES
-
-@app.post("/chat")
-def chat(req: ChatRequest):
-    context = json.dumps(PROPERTIES)
-    if GEMINI_KEY:
-        try:
-            model = genai.GenerativeModel("gemini-1.5-flash")
-            response = model.generate_content(f"{SYSTEM_PROMPT}\nProperties:{context}\nUser:{req.message}")
-            reply = response.text
-        except Exception as e:
-            reply = f"Error: {str(e)}"
-    else:
-        reply = f"Assalam-o-Alaikum! Ji sir {req.message} ke liye mere pas DHA Phase 6 me 3.5 crore me option hai. Visit kab karna hai?"
-    return {"reply_urdulish": reply}
+# --- Voice Generate Function (SDK ke bagair) ---
+def make_voice(text):
+    try:
+        url = "https://api.fish.audio/v1/tts"
+        headers = {
+            "Authorization": f"Bearer {FISH_API_KEY}",
+            "Content-Type": "application/json"
+        }
+        # Fish ka naya payload format
+        data = {
+            "text": text,
+            "reference_id": FISH_MODEL_ID,
+            "format": "mp3",
+            "mp3_bitrate": 128
+        }
+        resp = requests.post(url, json=data, headers=headers, timeout=30)
+        print("Fish Status:", resp.status_code)
+        if resp.status_code == 200:
+            with open(AUDIO_PATH, "wb") as f:
+                f.write(resp.content)
+            return True
+        else:
+            print("Fish Error:", resp.text)
+            return False
+    except Exception as e:
+        print("Voice Exception:", e)
+        return False
 
 @app.post("/voice")
-def voice_agent(req: ChatRequest):
-    chat_result = chat(req)
-    text_reply = chat_result["reply_urdulish"]
-    try:
-        from fish_audio_sdk import Session, TTSRequest
-        FISH_KEY = os.getenv("FISH_API_KEY")
-        if not FISH_KEY:
-            return {"reply_urdulish": text_reply, "audio_url": None, "note": "FISH_API_KEY missing"}
-        session = Session(FISH_KEY)
-        tts_request = TTSRequest(text=text_reply)
-        with open("real_estate_agent.mp3", "wb") as f:
-            for chunk in session.tts(tts_request):
-                f.write(chunk)
-        return {"reply_urdulish": text_reply, "audio_file": "real_estate_agent.mp3"}
-    except Exception as e:
-        return {"reply_urdulish": text_reply, "error_voice": str(e)}
+def voice_chat(req: ChatRequest):
+    # 1. Gemini se jawab lo
+    prompt = f"You are a real estate agent. Reply in short Urdulish. User: {req.message}"
+    gemini_resp = model.generate_content(prompt)
+    reply_text = gemini_resp.text.strip()
+
+    # 2. Usi jawab ki voice banao
+    success = make_voice(reply_text)
+    
+    if not success:
+        return JSONResponse({"reply_urdulish": reply_text, "error_voice": "Fish API failed, check API Key / Model ID / Balance"})
+
+    return {"reply_urdulish": reply_text, "audio_ready": True}
 
 @app.get("/audio")
 def get_audio():
-    if os.path.exists("real_estate_agent.mp3"):
-        return FileResponse("real_estate_agent.mp3", media_type="audio/mpeg")
-    return {"error": "No audio file yet, call /voice first"}
+    if not os.path.exists(AUDIO_PATH):
+        return JSONResponse({"error": "No audio file yet, call /voice first"}, status_code=404)
+    return FileResponse(AUDIO_PATH, media_type="audio/mpeg", filename="voice.mp3")
 
-@app.post("/book-appointment")
-def book(name:str, phone:str, date:str, time:str):
-    return {"success":True, "message":f"Shukria {name}! {date} {time} ko visit book ho gaya"}
+@app.get("/")
+def home():
+    return {"status": "ok"}
