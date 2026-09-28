@@ -1,5 +1,6 @@
 fastapi
 uvicorn
-google-generativeai
-requests
+google-genai
+fish-audio-sdk
+pydantic
 python-dotenv
