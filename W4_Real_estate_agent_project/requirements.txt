@@ -1,6 +1,7 @@
 fastapi
-uvicorn
+uvicorn[standard]
+google-genai
+fish-audio-sdk==0.1.5
 pydantic
 python-multipart
-google-generativeai
-fish-audio-sdk
+httpx
