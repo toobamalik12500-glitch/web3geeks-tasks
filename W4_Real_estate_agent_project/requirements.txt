@@ -1,7 +1,5 @@
 fastapi
 uvicorn
+google-generativeai
+requests
 python-dotenv
-pandas
-chromadb
-langgraph
-langchain
