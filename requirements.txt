@@ -1,5 +1,5 @@
 fastapi
 uvicorn
-google-generativeai
-fish-audio-sdk
+google-genai
+requests
 python-multipart
